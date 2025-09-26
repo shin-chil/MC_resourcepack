@@ -1,1 +1,2 @@
-# MusicParty Resources\nThis repository hosts resource packs for the MusicParty plugin.
+# MusicParty Resources
+# This repository hosts resource packs for the MusicParty plugin.
