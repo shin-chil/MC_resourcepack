@@ -1,7 +1,7 @@
 name: Delete Old Releases
 
 on:
-  workflow_dispatch:  # ✅ 手動実行のみ
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,14 +17,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh jq
 
-      - name: Authenticate GH CLI
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh auth login --with-token <<< "$GH_TOKEN"
-
       - name: Delete old releases
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ 自動で gh に認識される
         run: |
           echo "Fetching all releases..."
           releases=$(gh release list --limit 100 --json tagName,publishedAt | jq -r 'sort_by(.publishedAt) | reverse | .[] | .tagName')
