@@ -1,0 +1,40 @@
+name: Delete Old Releases
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # タグ削除
+  deployments: write
+  issues: write
+  pull-requests: write
+  repository-projects: write
+  discussions: write
+  packages: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GitHub CLI
+      - uses: cli/cli-action@v2
+      
+      - name: Delete old releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching all releases..."
+          releases=$(gh release list --limit 100 --json tagName,publishedAt | jq -r 'sort_by(.publishedAt) | reverse | .[] | .tagName')
+
+          count=0
+          for tag in $releases; do
+            count=$((count + 1))
+            if [ $count -le 2 ]; then
+              echo "Keeping: $tag"
+            else
+              echo "Deleting: $tag"
+              gh release delete "$tag" -y || true
+              git push origin --delete "$tag" || true
+            fi
+          done
+
