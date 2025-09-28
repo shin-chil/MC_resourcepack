@@ -4,9 +4,8 @@ on:
   workflow_dispatch:  # ✅ 手動実行のみ
 
 permissions:
-  contents: write   # ✅ Tag削除に必要
+  contents: write
   actions: write
-  # ↑ private repo の場合は Security → Actions → GITHUB_TOKEN → Write にする
 
 jobs:
   cleanup:
@@ -14,21 +13,14 @@ jobs:
 
     steps:
       - name: Install GitHub CLI
-        uses: cli/cli-action@v2
-
-      - name: Install jq (JSON parser)
-        run: sudo apt-get install -y jq
-
-      - name: Debug GITHUB_TOKEN
         run: |
-          if [ -z "$GITHUB_TOKEN" ]; then
-            echo "❌ GITHUB_TOKEN is missing!"
-            exit 1
-          else
-            echo "✅ GITHUB_TOKEN is available."
-          fi
+          sudo apt-get update
+          sudo apt-get install -y gh jq
+
+      - name: Authenticate GH CLI
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh auth login --with-token <<< "$GH_TOKEN"
 
       - name: Delete old releases
         env:
