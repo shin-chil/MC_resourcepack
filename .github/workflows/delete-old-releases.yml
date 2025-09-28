@@ -6,6 +6,7 @@ on:
 permissions:
   contents: write   # ✅ Tag削除に必要
   actions: write
+  # ↑ private repo の場合は Security → Actions → GITHUB_TOKEN → Write にする
 
 jobs:
   cleanup:
@@ -17,6 +18,17 @@ jobs:
 
       - name: Install jq (JSON parser)
         run: sudo apt-get install -y jq
+
+      - name: Debug GITHUB_TOKEN
+        run: |
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "❌ GITHUB_TOKEN is missing!"
+            exit 1
+          else
+            echo "✅ GITHUB_TOKEN is available."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete old releases
         env:
@@ -32,7 +44,7 @@ jobs:
               echo "Keeping: $tag"
             else
               echo "Deleting: $tag"
-              gh release delete "$tag" -y || true
-              git push origin --delete "$tag" || true
+              gh release delete "$tag" -y || echo "⚠ Failed to delete release $tag"
+              git push origin --delete "$tag" || echo "⚠ Failed to delete tag $tag"
             fi
           done
