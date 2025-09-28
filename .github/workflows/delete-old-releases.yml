@@ -1,24 +1,23 @@
 name: Delete Old Releases
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # ✅ 手動実行のみ
 
 permissions:
-  contents: write   # タグ削除
-  deployments: write
-  issues: write
-  pull-requests: write
-  repository-projects: write
-  discussions: write
-  packages: write
+  contents: write   # ✅ Tag削除に必要
+  actions: write
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+
     steps:
       - name: Install GitHub CLI
-      - uses: cli/cli-action@v2
-      
+        uses: cli/cli-action@v2
+
+      - name: Install jq (JSON parser)
+        run: sudo apt-get install -y jq
+
       - name: Delete old releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,4 +36,3 @@ jobs:
               git push origin --delete "$tag" || true
             fi
           done
-
